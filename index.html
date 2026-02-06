@@ -6,7 +6,7 @@
     <title>개 짱짱 쩌는 TRPG용 주사위</title>
     <style>
         body { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background-color: #f8f9fa; font-family: 'Apple SD Gothic Neo', sans-serif; margin: 0; }
-        h2 { color: #333; margin-top: 0; }
+        h2 { color: #333; margin-top: 0; min-height: 1.5em; }
         #dice-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 20px; min-height: 100px; max-width: 500px; }
         .dice { width: 70px; height: 70px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid #eee; }
         .controls { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); text-align: center; }
@@ -18,7 +18,6 @@
         .btn-roll:hover { background-color: #0056b3; }
         .btn-roll:disabled { background-color: #ccc; cursor: not-allowed; }
         
-        /* 흔들리는 애니메이션 */
         .rolling { animation: shake 0.4s ease-in-out; }
         @keyframes shake {
             0% { transform: translate(1px, 1px) rotate(0deg); }
@@ -32,7 +31,7 @@
 </head>
 <body>
 
-    <h2>나와라 주사위라고 외치세요</h2>
+    <h2 id="result-text">나와라 주사위라고 외치세요</h2>
 
     <div id="dice-container"></div>
 
@@ -49,15 +48,16 @@
         const container = document.getElementById('dice-container');
         const countDisplay = document.getElementById('dice-count');
         const rollButton = document.getElementById('roll-button');
+        const resultText = document.getElementById('result-text');
 
-        // 처음 시작할 때 주사위 1개 생성
         window.onload = () => updateDice();
 
         function changeCount(n) {
             count += n;
             if (count < 1) count = 1;
-            if (count > 12) count = 12; // 최대 12개까지
+            if (count > 12) count = 12;
             countDisplay.innerText = count;
+            resultText.innerText = "나와라 주사위라고 외치세요"; // 개수 바꿀 때 문구 초기화
             updateDice();
         }
 
@@ -73,24 +73,24 @@
 
         function rollAll() {
             const diceElements = document.querySelectorAll('.dice');
-            
-            // 버튼 중복 클릭 방지
             rollButton.disabled = true;
+            let total = 0;
+            let completed = 0;
 
-            diceElements.forEach((dice, index) => {
-                // 기존 애니메이션 제거 후 다시 추가 (다시 굴릴 때 필요)
+            diceElements.forEach((dice) => {
                 dice.classList.remove('rolling');
-                void dice.offsetWidth; // 브라우저 리플로우 강제 (애니메이션 초기화 편법)
+                void dice.offsetWidth; 
                 dice.classList.add('rolling');
                 
-                // 0.4초 뒤에 랜덤 숫자 표시
                 setTimeout(() => {
                     const result = Math.floor(Math.random() * 6) + 1;
                     dice.innerText = result;
+                    total += result;
+                    completed++;
                     
-                    // 모든 주사위가 멈추면 버튼 다시 활성화
-                    if (index === diceElements.length - 1) {
+                    if (completed === diceElements.length) {
                         rollButton.disabled = false;
+                        resultText.innerText = "합계: " + total;
                     }
                 }, 400);
             });
@@ -98,29 +98,3 @@
     </script>
 </body>
 </html>
-
-
-function rollAll() {
-            const diceElements = document.querySelectorAll('.dice');
-            rollButton.disabled = true;
-            let total = 0; // 합계 저장 변수
-
-            diceElements.forEach((dice, index) => {
-                dice.classList.remove('rolling');
-                void dice.offsetWidth;
-                dice.classList.add('rolling');
-                
-                setTimeout(() => {
-                    const result = Math.floor(Math.random() * 6) + 1;
-                    dice.innerText = result;
-                    total += result; // 나온 숫자를 더함
-                    
-                    if (index === diceElements.length - 1) {
-                        rollButton.disabled = false;
-                        // 제목에 합계를 표시하거나 alert로 띄워줄 수 있어!
-                        document.querySelector('h2').innerText = "합계: " + total;
-                    }
-                }, 400);
-            });
-        }
-
